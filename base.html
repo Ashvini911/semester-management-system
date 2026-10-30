@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Semester Management{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">{% block head %}{% endblock %}</head><body>
+{% if session.role %}<header><a class="brand" href="{{ url_for('dashboard.index') }}">Semester Management System</a>
+<nav>{% for ep, t in nav %}<a href="{{ url_for(ep) }}">{{ t }}</a>{% endfor %}</nav>
+<span class="who">{{ session.name }} · {{ session.role }} · <a href="{{ url_for('login.logout') }}">Logout</a></span></header>{% endif %}
+<main>{% for c, m in get_flashed_messages(with_categories=true) %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}
+{% block body %}{% endblock %}</main></body></html>
