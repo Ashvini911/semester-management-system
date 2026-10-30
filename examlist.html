@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}Exams{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('exams.css') }}">{% endblock %}
+{% block body %}
+<div class="card"><h1>{{ "Edit" if editing else "Add" }} Exams</h1>
+<form method="post">
+<label>Semester
+<select name="Semester_ID" required><option value="">Select…</option>{% for o in lookups["Semester_ID"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Semester_ID"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<label>Course
+<select name="Course_Code" required><option value="">Select…</option>{% for o in lookups["Course_Code"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Course_Code"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<label>Type (Quiz, Final...)
+<input name="Type" type="text" value="{{ row["Type"] if row["Type"] is not none }}" required></label>
+<label>Date
+<input name="Date" type="date" value="{{ row["Date"] if row["Date"] is not none }}" required></label>
+<label>Time
+<input name="Time" type="time" value="{{ row["Time"] if row["Time"] is not none }}" required></label>
+<div class="bar"><button>Save</button><a href="{{ url_for('exams.index') }}">Cancel</a></div>
+</form></div>
+{% endblock %}
