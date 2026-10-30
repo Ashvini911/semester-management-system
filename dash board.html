@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}<h1>Dashboard</h1>
+{% block head %}<link rel="stylesheet" href="{{ url_for('dashboard.css') }}">{% endblock %}
+<div class="grid">{% for ep, t, n in cards %}<a class="card stat" href="{{ url_for(ep) }}"><span>{{ n }}</span>{{ t }}</a>{% endfor %}</div>
+<h2>Upcoming exams</h2>
+{% if upcoming %}<table><tr><th>Course</th><th>Type</th><th>Date</th><th>Time</th></tr>
+{% for r in upcoming %}<tr><td>{{ r.Course_Code }}</td><td>{{ r.Type }}</td><td>{{ r.Date }}</td><td>{{ r.Time }}</td></tr>{% endfor %}</table>
+{% else %}<p class="muted">No upcoming exams scheduled.</p>{% endif %}{% endblock %}
