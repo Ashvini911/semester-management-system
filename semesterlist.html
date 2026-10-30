@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Semesters{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('semesters.css') }}">{% endblock %}
+{% block body %}
+<div class="bar"><h1>Semesters</h1>{% if "I" in perm %}<a class="btn" href="{{ url_for('semesters.new') }}">+ Add</a>{% endif %}</div>
+{% if rows %}<div class="scroll"><table>
+<tr><th>Semester ID</th><th>Academic Year</th><th>Start Date</th><th>End Date</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r["Semester_ID"] if r["Semester_ID"] is not none }}</td><td>{{ r["Academic_Year"] if r["Academic_Year"] is not none }}</td><td>{{ r["Start_Date"] if r["Start_Date"] is not none }}</td><td>{{ r["End_Date"] if r["End_Date"] is not none }}</td>
+<td class="act">
+{% if "U" in perm %}<a href="{{ url_for('semesters.edit', key=r['Semester_ID']) }}">Edit</a>{% endif %}
+{% if "D" in perm %}<form method="post" action="{{ url_for('semesters.delete', key=r['Semester_ID']) }}" onsubmit="return confirm('Delete this record?')"><button class="link">Delete</button></form>{% endif %}
+</td></tr>{% endfor %}
+</table></div>{% else %}<p class="muted">No records yet.</p>{% endif %}
+{% endblock %}

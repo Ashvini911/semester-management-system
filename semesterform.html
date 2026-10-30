@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Semesters{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('semesters.css') }}">{% endblock %}
+{% block body %}
+<div class="card"><h1>{{ "Edit" if editing else "Add" }} Semesters</h1>
+<form method="post">
+<label>Semester ID
+<input name="Semester_ID" type="text" value="{{ row["Semester_ID"] if row["Semester_ID"] is not none }}" required {% if editing %}readonly{% endif %}></label>
+<label>Academic Year (2026/2027)
+<input name="Academic_Year" type="text" value="{{ row["Academic_Year"] if row["Academic_Year"] is not none }}" required></label>
+<label>Start Date
+<input name="Start_Date" type="date" value="{{ row["Start_Date"] if row["Start_Date"] is not none }}" required></label>
+<label>End Date
+<input name="End_Date" type="date" value="{{ row["End_Date"] if row["End_Date"] is not none }}" required></label>
+<div class="bar"><button>Save</button><a href="{{ url_for('semesters.index') }}">Cancel</a></div>
+</form></div>
+{% endblock %}
