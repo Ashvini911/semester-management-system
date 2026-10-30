@@ -1,9 +1,76 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Semester Management{% endblock %}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">{% block head %}{% endblock %}</head><body>
-{% if session.role %}<header><a class="brand" href="{{ url_for('dashboard.index') }}">Semester Management System</a>
-<nav>{% for ep, t in nav %}<a href="{{ url_for(ep) }}">{{ t }}</a>{% endfor %}</nav>
-<span class="who">{{ session.name }} · {{ session.role }} · <a href="{{ url_for('login.logout') }}">Logout</a></span></header>{% endif %}
-<main>{% for c, m in get_flashed_messages(with_categories=true) %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}
-{% block body %}{% endblock %}</main></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Semester Management System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  </head>
+  <body>
+    {% if session.get("role") %}
+      <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+          <a class="brand" href="{{ url_for('dashboard.index') }}">
+            <span class="brand-mark" aria-hidden="true">SM</span>
+            <span>Semester Management<small>Academic administration</small></span>
+          </a>
+          <nav aria-label="Main navigation">
+            {% for group, items in navigation|groupby("group") %}
+              <section class="nav-group">
+                <h2>{{ group }}</h2>
+                {% for item in items %}
+                  <a class="nav-link{% if request.endpoint == item.endpoint %} active{% endif %}"
+                     href="{{ url_for(item.endpoint) }}"
+                     {% if request.endpoint == item.endpoint %}aria-current="page"{% endif %}>
+                    {{ item.label }}
+                  </a>
+                {% endfor %}
+              </section>
+            {% endfor %}
+          </nav>
+          <div class="sidebar-footer">University administration</div>
+        </aside>
+        <div class="main-shell">
+          <header class="topbar">
+            <button class="menu-toggle" type="button" aria-controls="sidebar"
+                    aria-expanded="false" aria-label="Toggle navigation">Menu</button>
+            <div class="profile">
+              <span class="avatar" aria-hidden="true">{{ session.get("name", "U")[:1]|upper }}</span>
+              <span class="profile-copy">
+                <strong>{{ session.get("name", "User") }}</strong>
+                <small>{{ session.get("role", "")|replace("_", " ")|title }}</small>
+              </span>
+              {% if dev_auth_bypass %}
+                <small>Development bypass</small>
+              {% else %}
+                <form method="post" action="{{ url_for('auth.logout') }}">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                  <button class="button button-quiet" type="submit">Sign out</button>
+                </form>
+              {% endif %}
+            </div>
+          </header>
+          <main class="content">
+    {% else %}
+      <main class="public-content">
+    {% endif %}
+        <div class="flash-stack" aria-live="polite">
+          {% for category, message in get_flashed_messages(with_categories=true) %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% block body %}{% endblock %}
+    {% if session.get("role") %}
+          </main>
+        </div>
+      </div>
+    {% else %}
+      </main>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  </body>
+</html>

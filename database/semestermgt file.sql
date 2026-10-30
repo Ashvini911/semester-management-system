@@ -1,0 +1,383 @@
+CREATE DATABASE IF NOT EXISTS semester_mgt;
+USE semester_mgt;
+
+CREATE TABLE USERS (
+    Email VARCHAR(100) PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Username VARCHAR(50) NOT NULL UNIQUE,
+    Password_Hash VARCHAR(255) NOT NULL,
+    Role ENUM('AR_OFFICER','HOD','DEAN','CLERK') NOT NULL
+);
+
+CREATE TABLE AR_OFFICER (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+);
+
+CREATE TABLE HOD (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+);
+
+CREATE TABLE DEAN (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+);
+
+CREATE TABLE CLERK (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+);
+
+CREATE TABLE DEPARTMENT (
+    Dep_Name VARCHAR(100) PRIMARY KEY,
+    Email VARCHAR(100) NOT NULL,
+    FOREIGN KEY (Email) REFERENCES HOD(Email)
+);
+
+CREATE TABLE DEGREE (
+    Degree_Name VARCHAR(100) PRIMARY KEY,
+    Credit SMALLINT NOT NULL CHECK (Credit > 0),
+    Duration TINYINT NOT NULL CHECK (Duration > 0),
+    Dep_Name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (Dep_Name) REFERENCES DEPARTMENT(Dep_Name)
+);
+
+CREATE TABLE SEMESTER (
+    Semester_ID VARCHAR(10) PRIMARY KEY,
+    Academic_Year VARCHAR(9) NOT NULL,
+    Start_Date DATE NOT NULL,
+    End_Date DATE NOT NULL,
+    CHECK (End_Date > Start_Date)
+);
+
+CREATE TABLE TIME_TABLE (
+    Timetable_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Semester_ID VARCHAR(10) NOT NULL,
+    Year VARCHAR(9) NOT NULL,
+    Place VARCHAR(100),
+    FOREIGN KEY (Semester_ID) REFERENCES SEMESTER(Semester_ID)
+);
+
+CREATE TABLE COURSE (
+    Course_Code VARCHAR(10) PRIMARY KEY,
+    Course_Name VARCHAR(100) NOT NULL,
+    Credit TINYINT NOT NULL CHECK (Credit BETWEEN 1 AND 6),
+    Semester_ID VARCHAR(10) NOT NULL,
+    FOREIGN KEY (Semester_ID) REFERENCES SEMESTER(Semester_ID)
+);
+
+CREATE TABLE ACADEMIC_STAFF_MEMBER (
+    Staff_ID VARCHAR(10) PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Contact_No VARCHAR(15),
+    Staff_Type ENUM('LECTURER','VISITING','INTERNAL') NOT NULL,
+    Employment ENUM('PERMANENT','TEMPORARY') NULL,
+    Timetable_ID INT NULL,
+    FOREIGN KEY (Timetable_ID) REFERENCES TIME_TABLE(Timetable_ID)
+);
+
+CREATE TABLE VENUE (
+    Venue_No VARCHAR(10) PRIMARY KEY,
+    Venue_Name VARCHAR(100) NOT NULL,
+    Capacity SMALLINT NOT NULL CHECK (Capacity > 0),
+    Floor TINYINT,
+    Building VARCHAR(50),
+    Venue_Type ENUM('LAB','LECTURE_HALL') NOT NULL
+);
+
+CREATE TABLE MODERATOR (
+    Email VARCHAR(100) PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Contact_No VARCHAR(15),
+    Official_Address VARCHAR(200),
+    Designation VARCHAR(50)
+);
+
+CREATE TABLE SECOND_EXAMINER (
+    Email VARCHAR(100) PRIMARY KEY,
+    Moderator_Email VARCHAR(100) NOT NULL,
+    FOREIGN KEY (Moderator_Email) REFERENCES MODERATOR(Email)
+);
+
+CREATE TABLE LECTURE (
+    Lecture_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Course_Code VARCHAR(10) NOT NULL,
+    Staff_ID VARCHAR(10) NOT NULL,
+    Venue_No VARCHAR(10) NOT NULL,
+    Moderator_Email VARCHAR(100),
+    `Date` DATE NOT NULL,
+    `Time` TIME NOT NULL,
+    Mode ENUM('Physical','Online') NOT NULL,
+    FOREIGN KEY (Course_Code) REFERENCES COURSE(Course_Code),
+    FOREIGN KEY (Staff_ID) REFERENCES ACADEMIC_STAFF_MEMBER(Staff_ID),
+    FOREIGN KEY (Venue_No) REFERENCES VENUE(Venue_No),
+    FOREIGN KEY (Moderator_Email) REFERENCES MODERATOR(Email)
+);
+
+CREATE TABLE EXAM (
+    Exam_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Semester_ID VARCHAR(10) NOT NULL,
+    Course_Code VARCHAR(10) NOT NULL,
+    `Type` VARCHAR(30) NOT NULL,
+    `Date` DATE NOT NULL,
+    `Time` TIME NOT NULL,
+    FOREIGN KEY (Semester_ID) REFERENCES SEMESTER(Semester_ID),
+    FOREIGN KEY (Course_Code) REFERENCES COURSE(Course_Code)
+);
+
+CREATE TABLE DEMONSTRATOR (
+    Demonstrator_ID INT AUTO_INCREMENT PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Contact_No VARCHAR(15)
+);
+
+CREATE TABLE REQUIREMENT (
+    Requirement_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Requirement_Name VARCHAR(100) NOT NULL,
+    Description VARCHAR(255)
+);
+
+CREATE TABLE DEMONSTRATOR_REQUIREMENT (
+    Demonstrator_ID INT NOT NULL,
+    Requirement_ID INT NOT NULL,
+    PRIMARY KEY (Demonstrator_ID, Requirement_ID),
+    FOREIGN KEY (Demonstrator_ID)
+        REFERENCES DEMONSTRATOR(Demonstrator_ID),
+    FOREIGN KEY (Requirement_ID)
+        REFERENCES REQUIREMENT(Requirement_ID)
+);
+
+CREATE INDEX idx_exam_date
+ON EXAM (`Date`);
+
+CREATE INDEX idx_lecture_course
+ON LECTURE (Course_Code);
+
+CREATE INDEX idx_lecture_staff
+ON LECTURE (Staff_ID);
+
+CREATE INDEX idx_course_sem
+ON COURSE (Semester_ID);
+
+SHOW TABLES;
+
+INSERT INTO USERS
+(Email, First_Name, Last_Name, Username, Password_Hash, Role)
+VALUES
+('ar@example.com', 'Amali', 'Perera', 'amali_ar', 'hash_ar_123', 'AR_OFFICER'),
+('hod@example.com', 'Kamal', 'Silva', 'kamal_hod', 'hash_hod_123', 'HOD'),
+('dean@example.com', 'Nimal', 'Fernando', 'nimal_dean', 'hash_dean_123', 'DEAN'),
+('clerk@example.com', 'Saman', 'Kumara', 'saman_clerk', 'hash_clerk_123', 'CLERK');
+
+INSERT INTO AR_OFFICER (Email)
+VALUES ('ar@example.com');
+
+INSERT INTO HOD (Email)
+VALUES ('hod@example.com');
+
+INSERT INTO DEAN (Email)
+VALUES ('dean@example.com');
+
+INSERT INTO CLERK (Email)
+VALUES ('clerk@example.com');
+
+INSERT INTO DEPARTMENT (Dep_Name, Email)
+VALUES
+('Computing', 'hod@example.com');
+
+INSERT INTO DEGREE (Degree_Name, Credit, Duration, Dep_Name)
+VALUES
+('BSc Information Technology', 120, 4, 'Computing');
+
+INSERT INTO SEMESTER
+(Semester_ID, Academic_Year, Start_Date, End_Date)
+VALUES
+('SEM1', '2026/2027', '2026-07-13', '2026-12-31'),
+('SEM2', '2026/2027', '2027-01-15', '2027-06-30');
+
+
+INSERT INTO DEMONSTRATOR
+(First_Name, Last_Name, Email, Contact_No)
+VALUES
+('Kasun', 'Perera', 'kasun@example.com', '0714567890'),
+('Nadeesha', 'Silva', 'nadeesha@example.com', '0774567890');
+
+INSERT INTO REQUIREMENT
+(Requirement_Name, Description)
+VALUES
+('Computer Skills', 'Basic computer knowledge required'),
+('Programming Skills', 'Basic programming knowledge required');
+
+INSERT INTO DEMONSTRATOR_REQUIREMENT
+(Demonstrator_ID, Requirement_ID)
+VALUES
+(1, 1),
+(2, 2);
+
+
+SELECT 'USERS' AS Table_Name, COUNT(*) AS Total_Records FROM USERS
+UNION ALL
+SELECT 'DEPARTMENT', COUNT(*) FROM DEPARTMENT
+UNION ALL
+SELECT 'DEGREE', COUNT(*) FROM DEGREE
+UNION ALL
+SELECT 'SEMESTER', COUNT(*) FROM SEMESTER
+UNION ALL
+SELECT 'TIME_TABLE', COUNT(*) FROM TIME_TABLE
+UNION ALL
+SELECT 'COURSE', COUNT(*) FROM COURSE
+UNION ALL
+SELECT 'ACADEMIC_STAFF_MEMBER', COUNT(*) FROM ACADEMIC_STAFF_MEMBER
+UNION ALL
+SELECT 'VENUE', COUNT(*) FROM VENUE
+UNION ALL
+SELECT 'MODERATOR', COUNT(*) FROM MODERATOR
+UNION ALL
+SELECT 'SECOND_EXAMINER', COUNT(*) FROM SECOND_EXAMINER
+UNION ALL
+SELECT 'LECTURE', COUNT(*) FROM LECTURE
+UNION ALL
+SELECT 'EXAM', COUNT(*) FROM EXAM
+UNION ALL
+SELECT 'DEMONSTRATOR', COUNT(*) FROM DEMONSTRATOR
+UNION ALL
+SELECT 'REQUIREMENT', COUNT(*) FROM REQUIREMENT
+UNION ALL
+SELECT 'DEMONSTRATOR_REQUIREMENT', COUNT(*) FROM DEMONSTRATOR_REQUIREMENT;
+
+SELECT 'AR_OFFICER' AS Table_Name, COUNT(*) AS Total_Records FROM AR_OFFICER
+UNION ALL
+SELECT 'HOD', COUNT(*) FROM HOD
+UNION ALL
+SELECT 'DEAN', COUNT(*) FROM DEAN
+UNION ALL
+SELECT 'CLERK', COUNT(*) FROM CLERK
+UNION ALL
+SELECT 'DEMONSTRATOR_REQUIREMENT', COUNT(*) FROM DEMONSTRATOR_REQUIREMENT;
+
+SHOW TABLES;
+
+SELECT Course_Code, Course_Name, Credit
+FROM COURSE
+WHERE Semester_ID = 'S1-2026';
+
+SELECT ACADEMIC_STAFF_MEMBER.First_Name, LECTURE.Course_Code,
+       LECTURE.Date, LECTURE.Time, VENUE.Venue_Name
+FROM LECTURE
+JOIN ACADEMIC_STAFF_MEMBER
+ON LECTURE.Staff_ID = ACADEMIC_STAFF_MEMBER.Staff_ID
+LEFT JOIN VENUE
+ON LECTURE.Venue_No = VENUE.Venue_No
+WHERE ACADEMIC_STAFF_MEMBER.Staff_ID = 'ST001'
+ORDER BY LECTURE.Date, LECTURE.Time;
+
+SELECT Course_Code, Type, Date, Time
+FROM EXAM
+WHERE Semester_ID = 'S1-2026'
+ORDER BY Date;
+
+SELECT DEGREE.Degree_Name, DEPARTMENT.Dep_Name,
+       USERS.First_Name AS HOD_Name
+FROM DEGREE
+JOIN DEPARTMENT ON DEGREE.Dep_Name = DEPARTMENT.Dep_Name
+JOIN USERS ON DEPARTMENT.Email = USERS.Email;
+
+SELECT VENUE.Venue_Name, VENUE.Capacity,
+       COUNT(LECTURE.Lecture_ID) AS Lectures
+FROM VENUE
+LEFT JOIN LECTURE
+ON VENUE.Venue_No = LECTURE.Venue_No
+GROUP BY VENUE.Venue_No, VENUE.Venue_Name, VENUE.Capacity;
+
+
+CREATE OR REPLACE VIEW v_lecture_timetable AS
+SELECT COURSE.Course_Code, COURSE.Course_Name,
+       LECTURE.Date, LECTURE.Time, LECTURE.Mode,
+       CONCAT(ACADEMIC_STAFF_MEMBER.First_Name, ' ',
+       ACADEMIC_STAFF_MEMBER.Last_Name) AS Lecturer,
+       VENUE.Venue_Name
+FROM LECTURE
+JOIN COURSE
+ON LECTURE.Course_Code = COURSE.Course_Code
+JOIN ACADEMIC_STAFF_MEMBER
+ON LECTURE.Staff_ID = ACADEMIC_STAFF_MEMBER.Staff_ID
+LEFT JOIN VENUE
+ON LECTURE.Venue_No = VENUE.Venue_No;
+
+CREATE OR REPLACE VIEW v_exam_schedule AS
+SELECT EXAM.Course_Code, EXAM.Type, EXAM.Date,
+       EXAM.Time, SEMESTER.Academic_Year,
+       SEMESTER.Semester_ID
+FROM EXAM
+JOIN SEMESTER
+ON EXAM.Semester_ID = SEMESTER.Semester_ID;
+
+SELECT * FROM v_lecture_timetable;
+SELECT * FROM v_exam_schedule;
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON semester_mgt.SEMESTER TO 'r_ar'@'%';
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON semester_mgt.COURSE TO 'r_ar'@'%';
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON semester_mgt.EXAM TO 'r_ar'@'%';
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON semester_mgt.TIME_TABLE TO 'r_ar'@'%';
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON semester_mgt.LECTURE TO 'r_ar'@'%';
+
+GRANT SELECT, UPDATE
+ON semester_mgt.DEPARTMENT TO 'r_hod'@'%';
+
+GRANT SELECT, UPDATE
+ON semester_mgt.DEGREE TO 'r_hod'@'%';
+
+GRANT SELECT
+ON semester_mgt.* TO 'r_dean'@'%';
+
+GRANT SELECT, INSERT
+ON semester_mgt.LECTURE TO 'r_clerk'@'%';
+
+GRANT SELECT, INSERT
+ON semester_mgt.EXAM TO 'r_clerk'@'%';
+
+GRANT SELECT
+ON semester_mgt.VENUE TO 'r_clerk'@'%';
+
+SHOW GRANTS FOR 'r_ar'@'%';
+SHOW GRANTS FOR 'r_hod'@'%';
+SHOW GRANTS FOR 'r_dean'@'%';
+SHOW GRANTS FOR 'r_clerk'@'%';
+SHOW GRANTS FOR 'ar_user'@'localhost';
+SET DEFAULT ROLE 'r_ar'@'%' TO 'ar_user'@'localhost';
+SHOW GRANTS FOR 'ar_user'@'localhost';
+SET DEFAULT ROLE 'r_ar'@'%'
+TO 'ar_user'@'localhost';
+SELECT DEFAULT_ROLE_USER, DEFAULT_ROLE_HOST
+FROM mysql.default_roles
+WHERE USER = 'ar_user'
+AND HOST = 'localhost';
+SHOW TABLES;
+
+
+
+
+
+
+
+
+
+
+
+

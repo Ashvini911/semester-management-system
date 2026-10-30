@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if editing else "Add" }} {{ spec.title }} · Semester Management{% endblock %}
+{% block body %}
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a><span aria-hidden="true">/</span>
+    <a href="{{ url_for(spec.slug + '.index') }}">{{ spec.title }}</a><span aria-hidden="true">/</span>
+    <span aria-current="page">{{ "Edit" if editing else "Add" }}</span>
+  </nav>
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Record management</p>
+      <h1>{{ "Edit" if editing else "Add" }} {{ spec.title[:-1] if spec.title.endswith('s') else spec.title }}</h1>
+      <p class="muted">Enter the required information below.</p>
+    </div>
+  </section>
+  <section class="panel form-panel">
+    {% if errors %}
+      <div class="validation-summary" role="alert">
+        <strong>Please correct the following:</strong>
+        <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+    <form method="post" class="record-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      {% for field in spec.fields %}
+        <div class="field">
+          <label for="field-{{ field.name }}">
+            {{ field.label }}{% if field.required %}<span class="required-mark" aria-label="required">*</span>{% endif %}
+          </label>
+          {% set current_value = row.get(field.name, "") %}
+          {% if field.lookup_sql or field.choices %}
+            <select id="field-{{ field.name }}" name="{{ field.name }}"
+                    {% if field.required %}required{% endif %}
+                    {% if editing and field.readonly %}readonly{% endif %}>
+              {% if not field.required %}<option value="">None</option>{% else %}<option value="">Select…</option>{% endif %}
+              {% if field.lookup_sql %}
+                {% for option in lookups[field.name] %}
+                  <option value="{{ option[field.lookup_value] }}"
+                    {% if option[field.lookup_value]|string == current_value|string %}selected{% endif %}>
+                    {{ option[field.lookup_label or field.lookup_value] }}
+                  </option>
+                {% endfor %}
+              {% else %}
+                {% for option in field.choices %}
+                  <option value="{{ option }}" {% if option|string == current_value|string %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+              {% endif %}
+            </select>
+          {% else %}
+            <input id="field-{{ field.name }}" name="{{ field.name }}"
+                   type="{{ field.kind }}" value="{{ current_value if current_value is not none else '' }}"
+                   {% if field.required %}required{% endif %}
+                   {% if field.max_length %}maxlength="{{ field.max_length }}"{% endif %}
+                   {% if field.minimum is not none %}min="{{ field.minimum }}"{% endif %}
+                   {% if field.maximum is not none %}max="{{ field.maximum }}"{% endif %}
+                   {% if editing and field.readonly %}readonly{% endif %}>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button class="button button-primary" type="submit">Save changes</button>
+        <a class="button button-quiet" href="{{ url_for(spec.slug + '.index') }}">Cancel</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Unexpected error · Semester Management{% endblock %}
+{% block body %}
+  <section class="error-card">
+    <p class="eyebrow">500 · Unexpected error</p>
+    <h1>We could not complete your request.</h1>
+    <p class="muted">The issue has been logged. Please try again later.</p>
+    <a class="button button-primary" href="{{ url_for('dashboard.index') if session.get('role') else url_for('auth.login') }}">Return</a>
+  </section>
+{% endblock %}

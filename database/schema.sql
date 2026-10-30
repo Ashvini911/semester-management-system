@@ -1,0 +1,173 @@
+CREATE DATABASE IF NOT EXISTS semester_mgt
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+USE semester_mgt;
+
+CREATE TABLE USERS (
+    Email VARCHAR(100) PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Username VARCHAR(50) NOT NULL UNIQUE,
+    Password_Hash VARCHAR(255) NOT NULL,
+    Role ENUM('AR_OFFICER', 'HOD', 'DEAN', 'CLERK') NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE AR_OFFICER (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+) ENGINE=InnoDB;
+
+CREATE TABLE HOD (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+) ENGINE=InnoDB;
+
+CREATE TABLE DEAN (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+) ENGINE=InnoDB;
+
+CREATE TABLE CLERK (
+    Email VARCHAR(100) PRIMARY KEY,
+    FOREIGN KEY (Email) REFERENCES USERS(Email)
+) ENGINE=InnoDB;
+
+CREATE TABLE DEPARTMENT (
+    Dep_Name VARCHAR(100) PRIMARY KEY,
+    Email VARCHAR(100) NOT NULL,
+    FOREIGN KEY (Email) REFERENCES HOD(Email)
+) ENGINE=InnoDB;
+
+CREATE TABLE DEGREE (
+    Degree_Name VARCHAR(100) PRIMARY KEY,
+    Credit SMALLINT NOT NULL CHECK (Credit > 0),
+    Duration TINYINT NOT NULL CHECK (Duration > 0),
+    Dep_Name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (Dep_Name) REFERENCES DEPARTMENT(Dep_Name)
+) ENGINE=InnoDB;
+
+CREATE TABLE SEMESTER (
+    Semester_ID VARCHAR(10) PRIMARY KEY,
+    Academic_Year VARCHAR(9) NOT NULL,
+    Start_Date DATE NOT NULL,
+    End_Date DATE NOT NULL,
+    CHECK (End_Date > Start_Date)
+) ENGINE=InnoDB;
+
+CREATE TABLE TIME_TABLE (
+    Timetable_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Semester_ID VARCHAR(10) NOT NULL,
+    Year VARCHAR(9) NOT NULL,
+    Place VARCHAR(100),
+    FOREIGN KEY (Semester_ID) REFERENCES SEMESTER(Semester_ID)
+) ENGINE=InnoDB;
+
+CREATE TABLE COURSE (
+    Course_Code VARCHAR(10) PRIMARY KEY,
+    Course_Name VARCHAR(100) NOT NULL,
+    Credit TINYINT NOT NULL CHECK (Credit BETWEEN 1 AND 6),
+    Semester_ID VARCHAR(10) NOT NULL,
+    KEY idx_course_sem (Semester_ID),
+    FOREIGN KEY (Semester_ID) REFERENCES SEMESTER(Semester_ID)
+) ENGINE=InnoDB;
+
+CREATE TABLE ACADEMIC_STAFF_MEMBER (
+    Staff_ID VARCHAR(10) PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Contact_No VARCHAR(15),
+    Staff_Type ENUM('LECTURER', 'VISITING', 'INTERNAL') NOT NULL,
+    Employment ENUM('PERMANENT', 'TEMPORARY'),
+    Timetable_ID INT,
+    FOREIGN KEY (Timetable_ID) REFERENCES TIME_TABLE(Timetable_ID)
+) ENGINE=InnoDB;
+
+CREATE TABLE VENUE (
+    Venue_No VARCHAR(10) PRIMARY KEY,
+    Venue_Name VARCHAR(100) NOT NULL,
+    Capacity SMALLINT NOT NULL CHECK (Capacity > 0),
+    Floor TINYINT,
+    Building VARCHAR(50),
+    Venue_Type ENUM('LAB', 'LECTURE_HALL') NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE MODERATOR (
+    Email VARCHAR(100) PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Contact_No VARCHAR(15),
+    Official_Address VARCHAR(200),
+    Designation VARCHAR(50)
+) ENGINE=InnoDB;
+
+CREATE TABLE SECOND_EXAMINER (
+    Email VARCHAR(100) PRIMARY KEY,
+    Moderator_Email VARCHAR(100) NOT NULL,
+    FOREIGN KEY (Moderator_Email) REFERENCES MODERATOR(Email)
+) ENGINE=InnoDB;
+
+CREATE TABLE LECTURE (
+    Lecture_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Course_Code VARCHAR(10) NOT NULL,
+    Staff_ID VARCHAR(10) NOT NULL,
+    Venue_No VARCHAR(10) NOT NULL,
+    Moderator_Email VARCHAR(100),
+    `Date` DATE NOT NULL,
+    `Time` TIME NOT NULL,
+    Mode ENUM('Physical', 'Online') NOT NULL,
+    KEY idx_lecture_course (Course_Code),
+    KEY idx_lecture_staff (Staff_ID),
+    FOREIGN KEY (Course_Code) REFERENCES COURSE(Course_Code),
+    FOREIGN KEY (Staff_ID) REFERENCES ACADEMIC_STAFF_MEMBER(Staff_ID),
+    FOREIGN KEY (Venue_No) REFERENCES VENUE(Venue_No),
+    FOREIGN KEY (Moderator_Email) REFERENCES MODERATOR(Email)
+) ENGINE=InnoDB;
+
+CREATE TABLE EXAM (
+    Exam_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Semester_ID VARCHAR(10) NOT NULL,
+    Course_Code VARCHAR(10) NOT NULL,
+    `Type` VARCHAR(30) NOT NULL,
+    `Date` DATE NOT NULL,
+    `Time` TIME NOT NULL,
+    KEY idx_exam_date (`Date`),
+    FOREIGN KEY (Semester_ID) REFERENCES SEMESTER(Semester_ID),
+    FOREIGN KEY (Course_Code) REFERENCES COURSE(Course_Code)
+) ENGINE=InnoDB;
+
+CREATE TABLE DEMONSTRATOR (
+    Demonstrator_ID INT AUTO_INCREMENT PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Contact_No VARCHAR(15)
+) ENGINE=InnoDB;
+
+CREATE TABLE REQUIREMENT (
+    Requirement_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Requirement_Name VARCHAR(100) NOT NULL,
+    Description VARCHAR(255)
+) ENGINE=InnoDB;
+
+CREATE TABLE DEMONSTRATOR_REQUIREMENT (
+    Demonstrator_ID INT NOT NULL,
+    Requirement_ID INT NOT NULL,
+    PRIMARY KEY (Demonstrator_ID, Requirement_ID),
+    FOREIGN KEY (Demonstrator_ID) REFERENCES DEMONSTRATOR(Demonstrator_ID),
+    FOREIGN KEY (Requirement_ID) REFERENCES REQUIREMENT(Requirement_ID)
+) ENGINE=InnoDB;
+
+CREATE OR REPLACE VIEW v_lecture_timetable AS
+SELECT c.Course_Code, c.Course_Name, l.`Date`, l.`Time`, l.Mode,
+       CONCAT(s.First_Name, ' ', s.Last_Name) AS Lecturer, v.Venue_Name
+FROM LECTURE l
+JOIN COURSE c ON c.Course_Code = l.Course_Code
+JOIN ACADEMIC_STAFF_MEMBER s ON s.Staff_ID = l.Staff_ID
+LEFT JOIN VENUE v ON v.Venue_No = l.Venue_No;
+
+CREATE OR REPLACE VIEW v_exam_schedule AS
+SELECT e.Course_Code, e.`Type`, e.`Date`, e.`Time`,
+       s.Academic_Year, s.Semester_ID
+FROM EXAM e
+JOIN SEMESTER s ON s.Semester_ID = e.Semester_ID;

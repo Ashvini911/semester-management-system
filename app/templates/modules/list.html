@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ spec.title }} · Semester Management{% endblock %}
+{% block body %}
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a><span aria-hidden="true">/</span>
+    <span aria-current="page">{{ spec.title }}</span>
+  </nav>
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Record management</p>
+      <h1>{{ spec.title }}</h1>
+      <p class="muted">Browse and manage {{ spec.title|lower }} available to your role.</p>
+    </div>
+    {% if "C" in actions %}
+      <a class="button button-primary" href="{{ url_for(spec.slug + '.new') }}">Add {{ spec.title[:-1] if spec.title.endswith('s') else spec.title }}</a>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <form class="search-form" method="get" role="search">
+      <label class="sr-only" for="record-search">Search {{ spec.title|lower }}</label>
+      <input id="record-search" name="q" type="search" value="{{ search }}"
+             placeholder="Search {{ spec.title|lower }}…" autocomplete="off">
+      <button class="button button-secondary" type="submit">Search</button>
+      {% if search %}<a class="button button-quiet" href="{{ url_for(spec.slug + '.index') }}">Clear</a>{% endif %}
+    </form>
+
+    {% if rows %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              {% for key, label in spec.columns %}<th scope="col">{{ label }}</th>{% endfor %}
+              {% if "U" in actions or "D" in actions %}<th scope="col">Actions</th>{% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                {% for key, label in spec.columns %}<td>{{ row[key] if row[key] is not none else "—" }}</td>{% endfor %}
+                {% if "U" in actions or "D" in actions %}
+                  <td class="row-actions">
+                    {% if "U" in actions %}
+                      <a class="text-link" href="{{ url_for(spec.slug + '.edit', key=row[spec.key]) }}">Edit</a>
+                    {% endif %}
+                    {% if "D" in actions %}
+                      <form method="post" action="{{ url_for(spec.slug + '.delete', key=row[spec.key]) }}"
+                            data-confirm="Delete this record? This action cannot be undone.">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                        <button class="text-button text-danger" type="submit">Delete</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <h2>{% if search %}No matching records{% else %}No {{ spec.title|lower }} yet{% endif %}</h2>
+        <p>{% if search %}Try a different search term.{% elif "C" in actions %}Add a record to get started.{% else %}Records will appear here when available.{% endif %}</p>
+        {% if not search and "C" in actions %}
+          <a class="button button-primary" href="{{ url_for(spec.slug + '.new') }}">Add {{ spec.title[:-1] if spec.title.endswith('s') else spec.title }}</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

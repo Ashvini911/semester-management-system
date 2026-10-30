@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Semester Management{% endblock %}
+{% block body %}
+  <section class="login-card">
+    <span class="brand-mark" aria-hidden="true">SM</span>
+    <p class="eyebrow">University administration</p>
+    <h1>Welcome back</h1>
+    <p class="muted">Sign in to manage academic information.</p>
+    <form method="post" class="form-stack">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username"
+             maxlength="50" required autofocus>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             autocomplete="current-password" required>
+      <button class="button button-primary" type="submit">Sign in</button>
+    </form>
+  </section>
+{% endblock %}

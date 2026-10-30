@@ -1,0 +1,11 @@
+.login-card { width: min(420px, 100%); padding: 34px; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 18px 50px rgba(16,42,67,.1); }
+.login-card .brand-mark { margin-bottom: 24px; }
+.login-card h1 { margin: 0; color: var(--navy); font-size: 28px; letter-spacing: -.04em; }
+.login-card > .muted { margin: 9px 0 24px; font-size: 13px; }
+.form-stack { display: grid; gap: 10px; }
+.form-stack label { margin-top: 4px; color: #34495e; font-size: 12px; font-weight: 650; }
+.form-stack input { min-height: 44px; padding: 10px 12px; border: 1px solid #cbd7e2; border-radius: 8px; background: #fff; color: var(--ink); font-size: 13px; }
+.form-stack input:focus { border-color: var(--blue); outline: 3px solid rgba(23,105,170,.13); }
+.form-stack .button { margin-top: 12px; }
+/* My new change */
+@media (max-width: 480px) { .login-card { padding: 26px 22px; } }
