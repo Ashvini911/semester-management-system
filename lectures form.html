@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Lectures{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('lectures.css') }}">{% endblock %}
+{% block body %}
+<div class="card"><h1>{{ "Edit" if editing else "Add" }} Lectures</h1>
+<form method="post">
+<label>Course
+<select name="Course_Code" required><option value="">Select…</option>{% for o in lookups["Course_Code"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Course_Code"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<label>Lecturer
+<select name="Staff_ID" required><option value="">Select…</option>{% for o in lookups["Staff_ID"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Staff_ID"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<label>Venue
+<select name="Venue_No" required><option value="">Select…</option>{% for o in lookups["Venue_No"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Venue_No"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<label>Moderator
+<select name="Moderator_Email"><option value="">— none —</option>{% for o in lookups["Moderator_Email"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Moderator_Email"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<label>Date
+<input name="Date" type="date" value="{{ row["Date"] if row["Date"] is not none }}" required></label>
+<label>Time
+<input name="Time" type="time" value="{{ row["Time"] if row["Time"] is not none }}" required></label>
+<label>Mode
+<select name="Mode" required><option value="">Select…</option>{% for o in lookups["Mode"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Mode"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<div class="bar"><button>Save</button><a href="{{ url_for('lectures.index') }}">Cancel</a></div>
+</form></div>
+{% endblock %}
