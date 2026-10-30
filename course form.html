@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Courses{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('courses.css') }}">{% endblock %}
+{% block body %}
+<div class="card"><h1>{{ "Edit" if editing else "Add" }} Courses</h1>
+<form method="post">
+<label>Course Code
+<input name="Course_Code" type="text" value="{{ row["Course_Code"] if row["Course_Code"] is not none }}" required {% if editing %}readonly{% endif %}></label>
+<label>Course Name
+<input name="Course_Name" type="text" value="{{ row["Course_Name"] if row["Course_Name"] is not none }}" required></label>
+<label>Credit (1-6)
+<input name="Credit" type="number" value="{{ row["Credit"] if row["Credit"] is not none }}" required></label>
+<label>Semester
+<select name="Semester_ID" required><option value="">Select…</option>{% for o in lookups["Semester_ID"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Semester_ID"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<div class="bar"><button>Save</button><a href="{{ url_for('courses.index') }}">Cancel</a></div>
+</form></div>
+{% endblock %}

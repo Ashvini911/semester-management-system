@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Venues{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('venues.css') }}">{% endblock %}
+{% block body %}
+<div class="card"><h1>{{ "Edit" if editing else "Add" }} Venues</h1>
+<form method="post">
+<label>Venue No
+<input name="Venue_No" type="text" value="{{ row["Venue_No"] if row["Venue_No"] is not none }}" required {% if editing %}readonly{% endif %}></label>
+<label>Name
+<input name="Venue_Name" type="text" value="{{ row["Venue_Name"] if row["Venue_Name"] is not none }}" required></label>
+<label>Capacity
+<input name="Capacity" type="number" value="{{ row["Capacity"] if row["Capacity"] is not none }}" required></label>
+<label>Floor
+<input name="Floor" type="number" value="{{ row["Floor"] if row["Floor"] is not none }}"></label>
+<label>Building
+<input name="Building" type="text" value="{{ row["Building"] if row["Building"] is not none }}"></label>
+<label>Type
+<select name="Venue_Type" required><option value="">Select…</option>{% for o in lookups["Venue_Type"] %}<option value="{{ o }}" {{ "selected" if o|string == row["Venue_Type"]|string }}>{{ o }}</option>{% endfor %}</select></label>
+<div class="bar"><button>Save</button><a href="{{ url_for('venues.index') }}">Cancel</a></div>
+</form></div>
+{% endblock %}

@@ -1,0 +1,44 @@
+/* base.css - shared styles for every page */
+:root{--bg:#f4f6fb;--fg:#1f2937;--card:#fff;--pri:#2b4acb;--accent:var(--pri);--line:#e2e6ef;--err:#b42318;--ok:#067647}
+@media (prefers-color-scheme:dark){:root{--bg:#10131a;--fg:#e5e7eb;--card:#1a1f2b;--pri:#7b93ff;--line:#2a3142;--err:#ff8a80;--ok:#6ee7a8}}
+
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--fg)}
+a{color:var(--pri)}
+main{max-width:1100px;margin:1.5rem auto;padding:0 1rem}
+.muted{opacity:.7}
+
+/* header + nav */
+header{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1.25rem;padding:.75rem 1.25rem;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{font-weight:700;color:var(--pri);text-decoration:none}
+nav{display:flex;flex-wrap:wrap;flex:1;gap:.9rem}
+nav a{font-size:.92rem;text-decoration:none}
+nav a:hover{text-decoration:underline}
+.who{font-size:.85rem}
+
+/* cards + forms */
+.card{max-width:560px;padding:1.25rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+label{display:block;margin:.8rem 0;font-size:.9rem}
+input,select{width:100%;padding:.55rem;margin-top:.3rem;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+input[readonly]{opacity:.6}
+
+/* buttons */
+button,.btn{display:inline-block;padding:.55rem 1rem;border:0;border-radius:6px;background:var(--accent);color:#fff;font-size:.9rem;text-decoration:none;cursor:pointer}
+button:hover,.btn:hover{filter:brightness(1.1)}
+button.link{padding:0;background:none;color:var(--err)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+
+/* tables */
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--card)}
+th,td{padding:.55rem .7rem;border-bottom:1px solid var(--line);text-align:left;font-size:.9rem;white-space:nowrap}
+th{border-bottom:2px solid var(--accent)}
+tr:hover td{background:rgba(127,127,127,.08)}
+.act{display:flex;gap:.7rem}
+.act form{margin:0}
+
+/* flash messages */
+.flash{margin-bottom:1rem;padding:.7rem 1rem;border:1px solid;border-radius:6px}
+.flash.err{color:var(--err)}
+.flash.ok{color:var(--ok)}
