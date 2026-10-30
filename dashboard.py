@@ -17,4 +17,3 @@ def index():
 @bp.route("/dashboard.css")
 def css():
     return send_from_directory(os.path.dirname(__file__), "dashboard.css")
-/* Testing GitHub commit */
