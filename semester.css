@@ -1,4 +1,0 @@
-/* semesters.css - styles for the semesters pages */
-:root{--accent:#2b4acb}
-@media (prefers-color-scheme:dark){:root{--accent:#7b93ff}}
-main h1{padding-left:.6rem;border-left:4px solid var(--accent)}

@@ -1,8 +1,0 @@
-/* moderators.css - styles for the moderators pages */
-:root{--accent:#be185d}
-@media (prefers-color-scheme:dark){:root{--accent:#f9a8d4}}
-main h1{padding-left:.6rem;border-left:4px solid var(--accent)}
-.card{max-width:720px}
-form{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
-form .bar{grid-column:1/-1}
-@media (max-width:600px){form{grid-template-columns:1fr}}

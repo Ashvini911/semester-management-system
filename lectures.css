@@ -1,8 +1,0 @@
-/* lectures.css - styles for the lectures pages */
-:root{--accent:#7c3aed}
-@media (prefers-color-scheme:dark){:root{--accent:#c4b5fd}}
-main h1{padding-left:.6rem;border-left:4px solid var(--accent)}
-.card{max-width:720px}
-form{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
-form .bar{grid-column:1/-1}
-@media (max-width:600px){form{grid-template-columns:1fr}}

@@ -1,4 +1,0 @@
-/* departments.css - styles for the departments pages */
-:root{--accent:#4d7c0f}
-@media (prefers-color-scheme:dark){:root{--accent:#bef264}}
-main h1{padding-left:.6rem;border-left:4px solid var(--accent)}

@@ -1,4 +1,0 @@
-/* degrees.css - styles for the degrees pages */
-:root{--accent:#4338ca}
-@media (prefers-color-scheme:dark){:root{--accent:#a5b4fc}}
-main h1{padding-left:.6rem;border-left:4px solid var(--accent)}

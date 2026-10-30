@@ -1,4 +1,0 @@
-/* exams.css - styles for the exams pages */
-:root{--accent:#b42318}
-@media (prefers-color-scheme:dark){:root{--accent:#ff8a80}}
-main h1{padding-left:.6rem;border-left:4px solid var(--accent)}

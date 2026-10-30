@@ -1,6 +1,0 @@
-lo/* dashboard.css */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
-.stat{display:block;text-align:center;text-decoration:none;color:var(--fg);transition:transform .15s}
-.stat:hover{transform:translateY(-3px)}
-.stat span{display:block;font-size:2rem;font-weight:700;color:var(--pri)}
-h2{margin-top:2rem}

@@ -1,4 +1,0 @@
-/* venues.css - styles for the venues pages */
-:root{--accent:#b45309}
-@media (prefers-color-scheme:dark){:root{--accent:#fcd34d}}
-main h1{padding-left:.6rem;border-left:4px solid var(--accent)}
