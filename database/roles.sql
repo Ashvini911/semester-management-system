@@ -22,7 +22,8 @@ GRANT SELECT, UPDATE ON semester_mgt.DEPARTMENT TO 'r_hod'@'%';
 GRANT SELECT, UPDATE ON semester_mgt.DEGREE TO 'r_hod'@'%';
 GRANT SELECT ON semester_mgt.HOD TO 'r_hod'@'%';
 
-REVOKE SELECT ON semester_mgt.* FROM 'r_dean'@'%';
+-- If r_dean was ever given schema-wide access, remove it manually first:
+-- REVOKE SELECT ON semester_mgt.* FROM 'r_dean'@'%';
 GRANT SELECT ON semester_mgt.DEPARTMENT TO 'r_dean'@'%';
 GRANT SELECT ON semester_mgt.DEGREE TO 'r_dean'@'%';
 GRANT SELECT ON semester_mgt.SEMESTER TO 'r_dean'@'%';

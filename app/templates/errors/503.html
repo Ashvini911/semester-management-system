@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Database unavailable · Semester Management{% endblock %}
+{% block body %}
+  <section class="error-card">
+    <p class="eyebrow">503 · Database unavailable</p>
+    <h1>The database is not available right now.</h1>
+    <p class="muted">Check the database settings in .env and that MySQL is configured, then try again.</p>
+    <a class="button button-primary" href="{{ url_for('dashboard.index') if session.get('role') else url_for('auth.login') }}">Return</a>
+  </section>
+{% endblock %}

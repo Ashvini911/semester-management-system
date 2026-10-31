@@ -1,0 +1,5 @@
+Role	        Username            Email
+AR Officer	amali_ar	ar@example.com
+HOD	        kamal_hod       hod@example.com
+Dean	        nimal_dean      dean@example.com
+Clerk	        saman_clerk	clerk@example.com

@@ -1,95 +1,123 @@
-# Database files
+# MySQL database setup
 
-- `schema.sql` is the canonical, non-destructive schema for a new empty
-  `semester_mgt` database. It preserves the tables, constraints and views in
-  the supplied project schema.
-- `sample_data.sql` inserts the assignment's sample academic records. The
-  sample account hashes are deliberately unusable until reset with the Flask
-  `set-password` command.
-- `roles.sql` creates and grants the MySQL roles used by the application. It
-  assumes the runtime account `semester_app`@`localhost` already exists and
-  limits the Dean role to explicit academic tables, not authentication records.
-- `verify_permissions.sql` contains read-only MySQL Workbench checks for account,
-  role, grant, default-role and effective privilege configuration.
-- `check_connection.py` checks a live connection with the application's `.env`
-  settings, tests role activation and expected allowed/denied access, and can
-  optionally verify a user's Werkzeug password hash.
-- `full_database_dump.sql` is the supplied MySQL dump, including sample data
-  and `DROP TABLE` statements. Restore it only into a disposable database.
-- `legacy_setup.sql` is the supplied setup/query script retained for reference.
-  It includes stale `S1-2026` examples and role grants without the corresponding
-  role creation statements; prefer the canonical files above for new setups.
+The application uses a dedicated `semester_app` MySQL account with narrowly
+scoped roles. Do not run Flask as MySQL `root`, and do not grant unrestricted
+database privileges to the application account.
 
-The app's `r_auth` role can read user identities and update only password
-hashes. Each business role follows the privilege matrix documented in the
-project README. Additional `SELECT` grants on related tables are limited to
-the foreign-key dropdowns and joined list pages needed by AR officers, HODs
-and clerks. No schema migration is required for these grants.
+## Install and start MySQL
 
-The schema and sample data scripts are intended for a fresh database. They
-use `CREATE` and `INSERT` statements and are not an upgrade script for a
-populated production database.
+1. Install **MySQL Server 8.0** and **MySQL Workbench** on the computer. During
+   installation, record the administrator password privately.
+2. Start the MySQL service. On Windows, confirm that the configured MySQL
+   service (often `MySQL80`) is running in Windows Services or MySQL Installer.
+   On macOS, start the service using the MySQL preference pane or the service
+   manager used by that installation.
+3. Open MySQL Workbench and connect to the local server as a MySQL
+   administrator. Confirm the connection's host and port (normally
+   `localhost:3306`).
 
-## MySQL Workbench setup
+## Create a new database
 
-For a **fresh** database, run these steps in order from a Workbench SQL tab
-connected as a MySQL administrator:
+For a **fresh, empty** database, use Workbench as an administrator and run
+these files in order:
 
-1. Open `schema.sql` and execute it against the server.
-2. Open `sample_data.sql` and execute it only if the sample records are wanted.
-3. Create the runtime account with a strong, unique password. Replace the
-   placeholder locally; do not save a real password into a project script:
+1. Open and execute `database/schema.sql`. It creates `semester_mgt` and its tables.
+2. Open and execute `database/sample_data.sql` if the sample academic records and users
+   are wanted. Sample user password hashes are placeholders.
+3. Create a dedicated runtime account, using a strong unique password locally:
 
    ```sql
    CREATE USER 'semester_app'@'localhost'
      IDENTIFIED BY 'replace-this-with-a-strong-secret';
    ```
 
-4. Open `roles.sql` and execute it. It creates the role definitions, grants
-   them to `semester_app`, and makes `r_auth` the account's default role.
-5. Open `verify_permissions.sql` and execute it as the administrator to inspect
-   the account, role assignments, default role and effective grants.
+   Do not save the real password in a project SQL file or commit it.
+4. Open and execute `database/roles.sql`. It creates the application roles, grants them
+   to `semester_app`, and makes `r_auth` the account's default role.
+5. Open and execute `database/verify_permissions.sql` as the administrator to inspect
+   the account, role assignments, default role and grants.
 
-For an **already imported database**, do not run `schema.sql`,
-`sample_data.sql`, or `full_database_dump.sql`. In Workbench, connect as the
-administrator for the same MySQL server used by Flask and run these checks:
+`roles.sql` assumes `semester_app`@`localhost` already exists. If the Flask
+configuration connects from a different host, create the matching MySQL user
+host entry and update the grants deliberately rather than broadening privileges.
 
-```sql
-SELECT User, Host, is_role
-FROM mysql.user
-WHERE (User = 'semester_app' AND Host = 'localhost')
-   OR User IN ('r_auth', 'r_ar', 'r_hod', 'r_dean', 'r_clerk');
+## Existing database
 
-SELECT @@hostname, @@port;
+For a database that has already been imported, do not rerun
+`database/schema.sql` or `database/sample_data.sql`. Do not run
+`database/full_database_dump.sql`. Confirm which MySQL
+server and database contain the data. If needed, create the runtime account
+using step 3 above, then apply only `roles.sql` and run
+`database/verify_permissions.sql`. `database/roles.sql` is designed to add/enforce the roles
+without dropping tables or changing academic data.
+
+`database/full_database_dump.sql` contains destructive `DROP TABLE` statements. Use it
+only to restore a **disposable** database whose existing data may be destroyed.
+`database/legacy_setup.sql`, `database/semestermgt file.sql` and
+`database/sm sql.sql` are retained source
+files and are not the canonical setup path.
+
+## Configure the application
+
+From the project root, copy `.env.example` to `.env` if setup has not already
+created it. Set the local database values to match Workbench and the account:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=semester_app
+DB_PASS=your-local-semester_app-password
+DB_NAME=semester_mgt
 ```
 
-If `semester_app` does not exist, create it using step 3 above. Then open and execute only `roles.sql`; it does not drop tables or modify
-academic data. It replaces the Dean role's broad database-level read grant
-with explicit academic-table grants, so `r_dean` cannot read password hashes
-or other authentication records. Reapply it to an existing setup to enforce
-that narrower privilege.
-Afterward execute `verify_permissions.sql`. If the runtime account has old
-direct grants, inspect `SHOW GRANTS FOR 'semester_app'@'localhost'` and remove
-only privileges that the administrator has confirmed are unnecessary. This
-file intentionally does not revoke unknown existing grants.
+Keep the generated `SECRET_KEY` private. `.env` is local and ignored by Git;
+never paste credentials into `.env.example`, SQL scripts, screenshots, or logs.
+The application deliberately connects without selecting a database first,
+activates `r_auth` or a business role, and then selects `semester_mgt`. This is
+necessary for MySQL role-based grants to take effect.
 
-The Flask connector deliberately connects without choosing a database first.
-It then activates exactly `r_auth` for login/CLI password resets, or exactly
-the logged-in user's business role, and only then executes `USE semester_mgt`.
-This avoids requesting database access before the role grants are active.
-Environment variables `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASS`
-must match the server and account shown in Workbench. Do not configure the
-Flask application to use `root`.
+## Verify connection and permissions
 
-To test the live setup after `.env` is configured, run from the project root:
+Run the connection and schema/read-access check from the project root.
+
+Windows:
+
+```powershell
+.\.venv\Scripts\python.exe check_database.py
+```
+
+macOS:
 
 ```sh
-.venv/bin/python database/check_connection.py
+.venv/bin/python check_database.py
 ```
 
-This performs read-only `SELECT`s and zero-row `INSERT`/`UPDATE`/`DELETE`
-permission probes; the probes do not create or alter any records. It expects
-unauthorized operations to be rejected. Optionally enter a username and its
-password when prompted to verify the stored Werkzeug hash. The password input
-is hidden and is not logged. Password changes remain an explicit separate
-operation using `flask --app run.py set-password <email>`.
+It reports unreachable MySQL, rejected credentials, a missing database, missing
+tables, unavailable roles, and denied `SELECT` access separately. It never
+prints `DB_PASS` and makes no database changes. It checks required role
+activation and read access only.
+
+For deeper application-account checks, run the existing
+`database/check_connection.py`. It verifies role activation, allowed reads,
+representative write grants and expected denied operations using zero-row
+probes; it can optionally check a stored Werkzeug password hash. The probes do
+not insert or modify records. `database/verify_permissions.sql` provides administrator
+side grant and role checks.
+
+If MySQL reports error 1044 or access denied, confirm the configured host,
+database and account, and then inspect the grant and default-role results from
+`verify_permissions.sql`. Do not fix permission errors by granting
+`ALL PRIVILEGES` to `semester_app`.
+
+## Set sample account passwords
+
+After `.env` and MySQL are configured, run the CLI from the project root to
+set passwords interactively. The password is hidden and stored as a Werkzeug
+hash. Setup does not reset existing passwords:
+
+```powershell
+.\.venv\Scripts\flask.exe --app run.py set-password ar@example.com
+.\.venv\Scripts\flask.exe --app run.py set-password hod@example.com
+.\.venv\Scripts\flask.exe --app run.py set-password dean@example.com
+.\.venv\Scripts\flask.exe --app run.py set-password clerk@example.com
+```

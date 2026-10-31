@@ -9,6 +9,10 @@
     </div>
   </section>
 
+  {% if database_error %}
+    <p class="empty-state" role="alert">The database is not available right now, so record totals cannot be shown. Check the database settings in .env and try again.</p>
+  {% endif %}
+
   <section class="stats-grid" aria-label="Academic record totals">
     {% for card in cards %}
       <a class="stat-card" href="{{ url_for(card.endpoint) }}">

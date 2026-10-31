@@ -5,6 +5,7 @@ from hmac import compare_digest
 
 from flask import Flask, abort, redirect, render_template, request, session, url_for
 import click
+import mysql.connector
 from werkzeug.security import generate_password_hash
 
 from app.config import Config
@@ -123,6 +124,11 @@ def create_app(test_config=None):
     @app.errorhandler(404)
     def not_found(_error):
         return render_template("errors/404.html"), 404
+
+    @app.errorhandler(mysql.connector.Error)
+    def database_unavailable(error):
+        app.logger.error("Database error: %s", error)
+        return render_template("errors/503.html"), 503
 
     @app.errorhandler(500)
     def internal_error(_error):
